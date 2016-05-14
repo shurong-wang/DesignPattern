@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title>单体模式</title>
+	</head>
+
+	<body>
+		<dl style="font-family: '微软雅黑';">
+			<dt>单体模式（单例模式）</dt>
+			<dd>单体模式是一个用来划分命名空间，将一批属性和方法组织在一起的对象，并且它只能被实例化一次。</dd>
+			<dd>关键：只能被实例化一次。</dd>
+			<dd>特点：
+				<ol>
+					<li>可以用来划分命名空间，减少全局变量的数量。</li>
+					<li>可以使代码组织的更为一致，使代码容易阅读和维护。</li>
+					<li>可以被实例化，且实例化一次。</li>
+				</ol>
+			</dd>
+		</dl>
+		<script type="text/javascript">
+			/*			
+ 			// 单体模式（写法一）
+			var Singleton = function(name) {
+				this.name = name;
+				this.instance = null;
+			};
+			Singleton.prototype.getName = function() {
+					return this.name;
+				}
+				// 获取实例对象
+			function getInstance(name) {
+				if (!this.instance) {
+					this.instance = new Singleton(name);
+				}
+				return this.instance;
+			}
+			//*/
+			
+			// 单体模式（写法二）
+			var Singleton = function(name) {
+				this.name = name;
+			};
+			Singleton.prototype.getName = function() {
+					return this.name;
+				}
+				// 获取实例对象
+			var getInstance = (function() {
+				var instance = null;
+				return function(name) {
+					if (!instance) {
+						instance = new Singleton(name);
+					}
+					return instance;
+				}
+			})();
+			// 测试单体模式的实例
+			var a = getInstance("hello");
+			var b = getInstance("world");
+			// 因为单体模式是只实例化一次，所以下面的实例是相等的
+			console.log(a.getName()); // hello
+			console.log(b.getName()); // hello *注意：此处仍然是hello
+			console.log(a === b); // true
+		</script>
+
+		<script type="text/javascript">
+			/*
+			 * 编写通用的单体模式
+			 * */
+			// 创建div
+			var createWindow = function() {
+				var div = document.createElement("div");
+				div.innerHTML = "<h4>弹窗提示内容</h4>";
+				div.style.display = 'none';
+				document.body.appendChild(div);
+				return div;
+			};
+			// 创建iframe
+			var createIframe = function() {
+				var iframe = document.createElement("iframe");
+				document.body.appendChild(iframe);
+				return iframe;
+			};
+			
+			// 获取实例的封装代码
+			/*
+			 * 我们使用一个参数fn传递进去，如果有result这个实例的话，直接返回；
+			 * 否则的话，getInstance函数调用fn这个函数，将返回值被保存在result并输出。
+			 */
+			var getInstance = function(fn) {
+				var result;
+				return function() {
+					return result || (result = fn.call(this, arguments));
+				}
+			};
+	
+			// 测试创建div
+			var createSingleDiv = getInstance(createWindow);
+			var win = createSingleDiv();
+			win.getElementsByTagName('h4')[0].innerHTML = "操作成功！";
+			win.style.display = "block";
+			
+			// 测试创建iframe
+			var createSingleIframe = getInstance(createIframe);
+			var ifr = createSingleIframe();
+			ifr.src = "about:blank";
+		</script>
+
+	</body>
+
+</html>

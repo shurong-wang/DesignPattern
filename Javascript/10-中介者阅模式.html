@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8"/>
+    <title>中介者模式</title>
+</head>
+
+<body>
+<dl style="font-family: '微软雅黑';">
+    <dt>中介者模式</dt>
+    <dd>
+        中介者模式的作用是解除对象与对象之间的耦合关系，增加一个中介对象后，所有的相关对象都通过中介者对象来通信，而不是相互引用。
+        所以当一个对象发送改变时，只需要通知中介者对象即可。中介者使各个对象之间耦合松散，而且可以独立地改变它们之间的交互。
+    </dd>
+</dl>
+
+<script type="text/javascript">
+    /*
+     // 案例1 组队英雄杀
+     */
+    var players = []; // 定义一个数组 保存所有的玩家
+    function Hero(name, teamColor) {
+        this.state = 'live';  // 玩家状态
+        this.name = name;     // 角色名字
+        this.teamColor = teamColor; // 队伍的颜色
+    }
+    // 获胜
+    Hero.prototype.win = function () {
+        console.log("win:" + this.name);
+    };
+    // 失败
+    Hero.prototype.lose = function () {
+        console.log("lose:" + this.name);
+    };
+    // 玩家阵亡
+    Hero.prototype.die = function () {
+        this.state = 'dead';
+        // 给中介者发送消息，玩家死亡
+        playerDirector.ReceiveMessage('playerDead', this);
+    }
+    // 移除玩家
+    Hero.prototype.remove = function () {
+        // 给中介者发送一个消息，移除一个玩家
+        playerDirector.ReceiveMessage('removePlayer', this);
+    };
+    // 玩家换队
+    Hero.prototype.changeTeam = function (color) {
+        // 给中介者发送一个消息，玩家换队
+        playerDirector.ReceiveMessage('changeTeam', this, color);
+    };
+    // 定义一个工厂类来创建玩家
+    var heroFactory = function (name, teamColor) {
+        // 创建一个新的玩家对象
+        var newHero = new Hero(name, teamColor);
+        // 给中介者发送消息，新增玩家
+        playerDirector.ReceiveMessage('addPlayer', newHero);
+        return newHero;
+    };
+    // 中介者
+    var playerDirector = (function () {
+        var players = {},  // 保存所有的玩家
+                operations = {}; // 中介者可以执行的操作
+        // 新增一个玩家操作
+        operations.addPlayer = function (player) {
+            // 获取玩家队友的颜色
+            var teamColor = player.teamColor;
+            // 如果该颜色的玩家还没有队伍的话，则新成立一个队伍
+            players[teamColor] = players[teamColor] || [];
+            // 添加玩家进队伍
+            players[teamColor].push(player);
+        };
+        // 移除一个玩家
+        operations.removePlayer = function (player) {
+            // 获取队伍的颜色
+            var teamColor = player.teamColor,
+            // 获取该队伍的所有成员
+                    teamPlayers = players[teamColor] || [];
+            // 遍历
+            for (var i = teamPlayers.length - 1; i >= 0; i--) {
+                if (teamPlayers[i] === player) {
+                    teamPlayers.splice(i, 1);
+                }
+            }
+        };
+        // 玩家换队
+        operations.changeTeam = function (player, newTeamColor) {
+            // 首先从原队伍中删除
+            operations.removePlayer(player);
+            // 然后改变队伍的颜色
+            player.teamColor = newTeamColor;
+            // 增加到队伍中
+            operations.addPlayer(player);
+        };
+        // 玩家死亡
+        operations.playerDead = function (player) {
+            var teamColor = player.teamColor,
+            // 玩家所在的队伍
+                    teamPlayers = players[teamColor];
+
+            var all_dead = true;
+            //遍历
+            for (var i = 0, player; player = teamPlayers[i++];) {
+                if (player.state !== 'dead') {
+                    all_dead = false;
+                    break;
+                }
+            }
+            // 如果all_dead 为true的话 说明全部死亡
+            if (all_dead) {
+                for (var i = 0, player; player = teamPlayers[i++];) {
+                    // 本队所有玩家lose
+                    player.lose();
+                }
+                for (var color in players) {
+                    if (color !== teamColor) {
+                        // 说明这是另外一组队伍
+                        // 获取该队伍的玩家
+                        var teamPlayers = players[color];
+                        for (var i = 0, player; player = teamPlayers[i++];) {
+                            player.win(); // 遍历通知其他玩家win了
+                        }
+                    }
+                }
+            }
+        };
+        var ReceiveMessage = function () {
+            // arguments的第一个参数为消息名称 获取第一个参数
+            var message = Array.prototype.shift.call(arguments);
+            operations[message].apply(this, arguments);
+        };
+        return {
+            ReceiveMessage: ReceiveMessage
+        };
+    })();
+
+    // 红队
+    var p1 = heroFactory("red-p1", 'red'),
+            p2 = heroFactory("red-p2", 'red'),
+            p3 = heroFactory("red-p3", 'red'),
+            p4 = heroFactory("red-p4", 'red');
+
+    // 蓝队
+    var p5 = heroFactory("blue-p1", 'blue'),
+            p6 = heroFactory("blue-p2", 'blue'),
+            p7 = heroFactory("blue-p3", 'blue'),
+            p8 = heroFactory("blue-p4", 'blue');
+
+    // 让红队玩家全部死亡
+    p1.die();
+    p2.die();
+    p3.die();
+    p4.die();
+    p5.die();
+</script>
+
+<!--
+    // 案例2 组合条件挑选商品
+-->
+<label for="colorSelect">选择颜色:</label>
+<select id="colorSelect">
+    <option value="">请选择</option>
+    <option value="红色">红色</option>
+    <option value="绿色">绿色</option>
+    <option value="蓝色">蓝色</option>
+</select>
+<label for="memorySelect"> 选择内存:</label>
+<select id="memorySelect">
+    <option value="">请选择</option>
+    <option value="32G">32G</option>
+    <option value="64G">64G</option>
+</select>
+<label for="numberInput">购买数量:</label> <input type="text" id="numberInput" size="5"/>
+<ol>
+    <li>你选择的颜色： <span id="colorInfo"></span></li>
+    <li>你选择的内存： <span id="memoryInfo"></span></li>
+    <li>你填写的数量： <span id="numberInfo"></span></li>
+</ol>
+
+<button id="nextBtn" disabled="true">请选择手机颜色/内存/数量</button>
+
+<script>
+    // 假设我们提前从后台获取到所有颜色手机的库存量
+    var goods = {
+        // 手机库存
+        "红色|32G": 6,
+        "绿色|64G": 16,
+        "蓝色|32G": 8,
+        "蓝色|64G": 18
+    };
+    /*
+     分别来监听监听表单操作，作出相应的处理
+     */
+    var colorSelect = document.getElementById("colorSelect"),
+        memorySelect = document.getElementById("memorySelect"),
+        numberInput = document.getElementById("numberInput"),
+        colorInfo = document.getElementById("colorInfo"),
+        numberInfo = document.getElementById("numberInfo"),
+        memoryInfo = document.getElementById("memoryInfo"),
+        nextBtn = document.getElementById("nextBtn");
+
+    // 选择颜色
+    colorSelect.onchange = function () {
+        select();
+    };
+    // 选择内存
+    memorySelect.onchange = function () {
+        select();
+    };
+    // 填写数量
+    numberInput.oninput = function () {
+        select();
+    };
+    // 中介者
+    function select() {
+        var color = colorSelect.value,   // 颜色
+            memory = memorySelect.value, // 内存
+            number = numberInput.value,  // 数量
+            stock = goods[color + '|' + memory];  // 库存
+
+        // 回显用户操作
+        colorInfo.innerHTML = color;
+        memoryInfo.innerHTML = memory;
+        numberInfo.innerHTML = number;
+
+        // 如果用户没有选择颜色的话，禁用按钮
+        if (!color) {
+            nextBtn.disabled = true;
+            nextBtn.innerHTML = "请选择手机颜色";
+            return;
+        }
+        // 如果用户没有选择内存的话，禁用按钮
+        if (!memory) {
+            nextBtn.disabled = true;
+            nextBtn.innerHTML = "请选择手机内存";
+            return;
+        }
+        // 如果用户输入数量不合法，禁用按钮
+        if (!/^\d+$/g.test(number)) {
+            nextBtn.disabled = true;
+            nextBtn.innerHTML = "请输入正确的购买数量";
+            return;
+        }
+        // 如果当前选择的数量大于当前的库存的数量的话，显示库存不足
+        if (number > stock) {
+            nextBtn.disabled = true;
+            nextBtn.innerHTML = "库存不足";
+            return;
+        }
+        nextBtn.disabled = false;
+        nextBtn.innerHTML = "放入购物车";
+    }
+</script>
+
+</body>
+
+</html>

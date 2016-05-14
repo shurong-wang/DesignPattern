@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8"/>
+    <title>发布订阅模式</title>
+</head>
+
+<body>
+<dl style="font-family: '微软雅黑';">
+    <dt>发布订阅模式（观察者模式）</dt>
+    <dd>
+        发布—订阅模式又叫观察者模式，它定义了对象间的一对多的关系，让多个观察者对象同时监听某一个主体对象，当一个对象发生改变时，所有依赖于它的对象都将得到通知。
+    </dd>
+    <dd> 如何实现发布订阅模式：
+        <ol>
+            <li> 首先，要确定谁是发布者。</li>
+            <li> 然后，给发布者添加一个回调函数缓存列表，用来通知订阅者。</li>
+            <li> 最后，发布者遍历这个缓存列表，依次触发里面存放的订阅者回调函数，发布消息给订阅者。</li>
+        </ol>
+    </dd>
+    <dd>优点：
+        <ol>
+            <li> 支持简单的广播通信，当对象状态发生改变时，会自动通知已经订阅过的对象。</li>
+            <li> 发布者与订阅者耦合性降低，发布者只管发布消息，不关心消息如何被订阅者使用。同时，订阅者只监听发布者的事件名，只要事件名不变，不关心发布者如何改变。</li>
+
+        </ol>
+    </dd>
+    <dd>缺点：
+        <ol>
+            <li> 创建订阅者需要消耗一定的时间和内存。</li>
+            <li> 虽然可以弱化对象之间的联系，如果过度使用的话，反而使代码不好理解及代码不好维护。</li>
+        </ol>
+    </dd>
+</dl>
+
+<script type="text/javascript">
+    /*
+     // 案例1 淘宝“收藏宝贝”
+     */
+    // 定义发布者
+    var event = {
+        // 订阅者回调函数缓存列表
+        list: [],
+        // 增加订阅者
+        listen: function (key, fn) {
+            // 如果还没有订阅过此类消息，给该类消息创建一个缓存列表
+            if (!this.list[key]) {
+                this.list[key] = [];
+            }
+            // 订阅消息添加到缓存列表
+            this.list[key].push(fn);
+        },
+        // 发布消息
+        trigger: function () {
+            // 取出消息类型名称
+            var key = Array.prototype.shift.call(arguments);
+            // 取出该消息对应的回调函数的集合
+            var fns = this.list[key];
+            // 如果没有订阅过该消息的话，则返回
+            if (!fns || fns.length === 0) {
+                return;
+            }
+            for (var i = 0, fn; fn = fns[i++];) {
+                // arguments 是发布消息时附送的参数
+                fn.apply(this, arguments);
+            }
+        },
+        // 退订消息
+        remove: function (key, fn) {
+            var fns = this.list[key];
+            // 如果key对应的消息没有订阅过的话，则返回
+            if (!fns) {
+                return false;
+            }
+            // 如果没有传入具体的回调函数，表示需要取消key对应消息的所有订阅
+            if (!fn) {
+                fn & (fns.length = 0);
+            } else {
+                for (var i = fns.length - 1; i >= 0; i--) {
+                    var _fn = fns[i];
+                    if (_fn === fn) {
+                        fns.splice(i, 1); // 删除订阅者的回调函数
+                    }
+                }
+            }
+        }
+    };
+
+    // 定义一个initEvent函数，这个函数使所有的普通对象都具有发布订阅功能
+    var initEvent = function (obj) {
+        for (var i in event) {
+            obj[i] = event[i];
+        }
+    };
+
+    // 测试： 给TaobaoShop对象添加"发布-订阅功能"
+    var TaobaoShop = {};
+    initEvent(TaobaoShop);
+
+    // 小红订阅消息1
+    TaobaoShop.listen('redShoes', fn1 = function (size) {
+        console.log("redShoes尺码：" + size);
+    });
+    // 小红订阅消息2
+    TaobaoShop.listen('yellowShoes', fn1 = function (size) {
+        console.log("yellowShoes：" + size);
+    });
+    // 小花订阅消息
+    TaobaoShop.listen('blueShoes', fn3 = function (size) {
+        console.log("blueShoes尺码：" + size);
+    });
+
+    // 小红取消订阅 yellowShoes
+    TaobaoShop.remove("yellowShoes", fn1);
+    // 店家发布消息
+    TaobaoShop.trigger("redShoes", 40);
+    TaobaoShop.trigger("yellowShoes", 41);
+    TaobaoShop.trigger("blueShoes", 42);
+</script>
+
+<!--
+    // 案例2 封装一个全局发布-订阅模式对象，实现两个模块之间的通信问题
+-->
+<button id="count">点击我</button>
+<input id="showcount" type="text"/>
+<script>
+    // 封装一个全局发布-订阅模式对象
+    var Event = (function () {
+        var list = {},
+                listen,
+                trigger,
+                remove;
+        listen = function (key, fn) {
+            if (!list[key]) {
+                list[key] = [];
+            }
+            list[key].push(fn);
+        };
+        trigger = function () {
+            var key = Array.prototype.shift.call(arguments),
+                    fns = list[key];
+            if (!fns || fns.length === 0) {
+                return false;
+            }
+            for (var i = 0, fn; fn = fns[i++];) {
+                fn.apply(this, arguments);
+            }
+        };
+        remove = function (key, fn) {
+            var fns = list[key];
+            if (!fns) {
+                return false;
+            }
+            if (!fn) {
+                fns & (fns.length = 0);
+            } else {
+                for (var i = fns.length - 1; i >= 0; i--) {
+                    var _fn = fns[i];
+                    if (_fn === fn) {
+                        fns.splice(i, 1);
+                    }
+                }
+            }
+        };
+        return {
+            listen: listen,
+            trigger: trigger,
+            remove: remove
+        }
+    })();
+
+    // a模块（发布者） 负责处理点击操作及发布消息
+    var a = (function () {
+        var count = 0;
+        var button = document.getElementById("count");
+        button.onclick = function () {
+            Event.trigger("Hit", ++count);
+        }
+    })();
+
+    // b模块（订阅者） 负责监听Hit消息，并把点击的总次数显示到页面
+    var b = (function () {
+        var inputEl = document.getElementById("showcount");
+        Event.listen('Hit', function (count) {
+            inputEl.value = count;
+        });
+    })();
+</script>
+
+</body>
+
+</html>

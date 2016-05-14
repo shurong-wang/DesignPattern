@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title>命令模式</title>
+	</head>
+
+	<body>
+		<dl style="font-family: '微软雅黑';">
+			<dt>命令模式</dt>
+			<dd> 命令模式中的命令指的是一个执行某些特定事情的指令。</dd>
+			<dd>使用场景：
+				<ol>
+					<li>请求发送者和请求接受者消除彼此代码中的耦合关系。</li>
+				</ol>
+			</dd>
+		</dl>
+
+		<button id="button1">button1</button>
+		<button id="button2">button2</button>
+		<button id="button3">button3</button>
+		<script type="text/javascript">
+			/*
+			 * 案例1 绑定按钮功能
+			 */
+			var btn1 = document.getElementById("button1"),
+			    btn2 = document.getElementById("button2"),
+			    btn3 = document.getElementById("button3");
+			    
+			// bindEnv 负责往按钮上面安装点击命令。点击按钮后，会调用函数
+			var bindEnv = function(button, func) {
+			    button.onclick = function(){
+			        func();
+			    }
+			};
+			// 实现业务中的增删改操作
+			var Menu = {
+			    add: function(){
+			        alert("我是来处理一些增加操作的");
+			    },
+			    del: function(){
+			        alert("我是来处理一些删除操作的");
+			    },
+			    update: function(){
+			        alert("我是来处理一些更新操作的");
+			    }
+			};
+			// 调用函数
+			bindEnv(btn1, Menu.add); // 增加按钮
+			bindEnv(btn2, Menu.del); // 删除按钮
+			bindEnv(btn3, Menu.update); // 更改按钮
+		</script>
+
+		<script type="text/javascript">
+			/*
+			 * 案例2 宏命令
+			 */
+			/*
+			宏命令是一组命令的集合，通过执行宏命令的方式，可以一次执行一批命令。
+			其实类似把所有函数方法放在一个数组里面去，然后遍历这个数组，依次执行该方法的。
+			 */
+			// 定义子命令
+			var cmd1 = {
+			    execute: function(){
+			        console.log('命令1');
+			    }
+			}; 
+			var cmd2 = {
+			    execute: function(){
+			        console.log('命令2');
+			    }
+			};
+			var cmd3 = {
+			    execute: function(){
+			        console.log('命令3');
+			    }
+			};
+			
+			// 定义宏命令
+			var command = function(){
+			    return {
+			        commandsList: [],
+			        add: function(cmd){
+			            this.commandsList.push(cmd);
+			        },
+			        execute: function(){
+			            for(var i = 0, iLen = this.commandsList.length; i < iLen; i ++) {
+			                this.commandsList[i].execute();
+			            }
+			        }
+			    }
+			};
+			
+			// 初始化宏命令
+			var cmd = command();
+			cmd.add(command1);
+			cmd.add(command2);
+			cmd.add(command3);
+			cmd.execute();
+		</script>
+
+	</body>
+
+</html>

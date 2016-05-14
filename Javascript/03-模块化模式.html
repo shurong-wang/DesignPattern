@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title>模块化模式</title>
+	</head>
+
+	<body>
+		<dl style="font-family: '微软雅黑';">
+			<dt>模块化模式</dt>
+			<dd>
+				模块模式使用了一个返回对象的匿名函数。 在这个匿名函数内部，先定义了私有变量和函数，供内部函数使用，然后将一个对象字面量作为函数的值返回。
+				返回的对象字面量中只包含可以公开的属性和方法。这样的话，可以提供外部使用该方法。 由于该返回对象中的公有方法是在匿名函数内部定义的，因此它可以访问内部的私有变量和函数。
+			</dd>
+		</dl>
+		<dl style="font-family: '微软雅黑';">
+			<dt>什么时候使用模块模式</dt>
+			<dd>
+				如果我们必须创建一个对象，并以某些私有数据进行初始化，同时还要公开一些能够访问这些私有数据的方法，这个时候就可以使用模块模式。
+			</dd>
+		</dl>
+		<script type="text/javascript">
+			function CustomType() {
+				this.name = "阮一峰";
+			};
+			CustomType.prototype.getName = function() {
+				return this.name;
+			}
+			var application = (function() {
+				// 定义私有
+				var _a = "aa";
+				// 定义私有函数
+				function _b() {};
+				// 实例化一个对象，为该实例增加一些公有属性和方法
+				var obj = new CustomType();
+				// 添加公有属性
+				obj.c = "cc";
+				// 添加公有方法
+				obj.d = function() {
+					return _a;
+				}
+				// 返回该对象
+				return obj;
+			})();
+			
+			// 打印application对象
+			console.log(application);
+			// 打印公有属性和方法
+			console.log(application.c); // cc
+			console.log(application.d()); // aa
+			console.log(application.name); // 阮一峰
+			console.log(application.getName()); // 阮一峰
+		</script>
+
+	</body>
+
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title>代理模式</title>
+	</head>
+
+	<body>
+		<dl style="font-family: '微软雅黑';">
+			<dt>代理模式</dt>
+			<dd>代理是一个对象，用来控制外界对本体对象的访问。本体对象负责执行被分派的函数，代理则控制本地对象何时被实例化，何时被使用。</dd>
+			<dd>优点：
+				<ol>
+					<li>代理对象可以代替本体被实例化，并使其可以被远程访问。</li>
+					<li>代理把本体实例化推迟到真正需要的时候。</li>
+				</ol>
+			</dd>
+		</dl>
+		<script type="text/javascript">
+			/*
+			 * 案例1 代理代替本体被实例化
+			 */
+			// 声明一个女神对象
+			var Goddess = function(name) {
+				this.name = name;
+			};
+			// 声明一个屌丝对象
+			var Loser = function(girl) {
+				this.girl = girl;
+				// 送情书给女神
+				this.sendLoveLetter = function(letter) {
+					console.log("Hi " + this.girl.name + ", Loser 送你一封情书：" + letter);
+				}
+			};
+			/*
+			// 屌丝自己送信
+			var loser = new Loser(new Goddess("柳岩"));
+			loser.sendLoveLetter("跟我走."); // Hi 柳岩, Loser 送你一封情书：跟我走.
+			//*/
+			// 声明一个代理闺蜜对象，代替屌丝送信给女神
+			var ProxyLadybro = function(girl) {
+				this.girl = girl;
+				// 闺蜜代替屌丝送信给女神
+				this.sendLoveLetter = function(letter) {
+					// 代理模式负责本体对象实例化
+					(new Loser(this.girl)).sendLoveLetter(letter);
+				}
+			};
+			// 闺蜜代替送信
+			var proxy = new ProxyLadybro(new Goddess("林志玲"));
+			proxy.sendLoveLetter("I love you."); // Hi 林志玲, Loser 送你一封情书：I love you.
+		</script>
+
+		<script type="text/javascript">
+			/*
+			 * 案例2 代理推迟本体实例化
+			 */
+			var loadingImg = "http://img.lanrentuku.com/img/allimg/1212/5-121204193Q9-50.gif";
+			var originalImg = "https://img.alicdn.com/tps/i4/TB1b_neLXXXXXcoXFXXc8PZ9XXX-130-200.png";
+			var OriginalImage = (function() {
+				var imgNode = document.createElement("img");
+				document.body.appendChild(imgNode);
+				return {
+					setSrc: function(src) {
+						console.log(src);
+						imgNode.src = src;
+					}
+				}
+			})();
+			/*
+			// 本体调用
+			OriginalImage.setSrc(originalImg);
+			//*/
+			// 代理模式
+			var ProxyImage = (function() {
+				var img = new Image();
+				img.onload = function() {
+					OriginalImage.setSrc(this.src);
+				};
+				return {
+					setSrc: function(src) {
+						OriginalImage.setSrc(loadingImg);
+						img.src = src;
+					}
+				}
+			})();
+			// 代理模式调用
+			ProxyImage.setSrc(originalImg);
+		</script>
+
+		<!-- 
+			// 案例3 虚拟代理合并http请求
+		 -->
+		<p>
+			<label>选择框</label>
+			<input type="checkbox" class="j-input" data-id="1" />
+		</p>
+		<p>
+			<label>选择框</label>
+			<input type="checkbox" class="j-input" data-id="2" />
+		</p>
+		<p>
+			<label>选择框</label>
+			<input type="checkbox" class="j-input" data-id="3" />
+		</p>
+		<p>
+			<label>选择框</label>
+			<input type="checkbox" class="j-input" data-id="4" />
+		</p>
+
+		<script type="text/javascript">
+			var checkboxs = document.getElementsByClassName("j-input");
+			for (var i = 0, ilen = checkboxs.length; i < ilen; i++) {
+				(function(i) {
+					checkboxs[i].onclick = function() {
+						if (this.checked) {
+							this.setAttribute("isflag", 1);
+						} else {
+							this.removeAttribute('isflag');
+						}
+						// 调用代理函数
+						proxyFunc(checkboxs);
+					}
+				})(i);
+			}
+			// 本体函数
+			var mainFunc = function(ids) {
+				console.log(ids);
+				// 把所有的id一次性发ajax请求给服务器端
+			};
+			// 代理函数 通过代理函数获取所有的id 传给本体函数去执行
+			var proxyFunc = (function() {
+				var cache = [], // 保存一段时间内的id
+					timer = null; // 定时器
+				return function(checkboxs) {
+					// 判断如果定时器有的话，不进行覆盖操作
+					if (timer) {
+						return;
+					}
+					timer = setTimeout(function() {
+						// 在2秒内获取所有被选中的id，通过属性isflag判断是否被选中
+						for (var i = 0, ilen = checkboxs.length; i < ilen; i++) {
+							if (checkboxs[i].hasAttribute("isflag")) {
+								var id = checkboxs[i].getAttribute("data-id");
+								cache[cache.length] = id;
+							}
+						}
+						mainFunc(cache.join(',')); // 2秒后需要给本体函数传递所有的id
+						// 清空定时器
+						clearTimeout(timer);
+						timer = null;
+						cache = [];
+					}, 2000);
+				}
+			})();
+		</script>
+
+		<!--
+			// 案例4 缓存代理
+        -->
+		<script type="text/javascript">
+			// 计算乘法
+			var mult = function() {
+				var a = 1;
+				for (var i = 0, ilen = arguments.length; i < ilen; i++) {
+					a = a * arguments[i];
+				}
+				return a;
+			};
+			// 计算加法
+			var plus = function() {
+				var a = 0;
+				for (var i = 0, ilen = arguments.length; i < ilen; i++) {
+					a += arguments[i];
+				}
+				return a;
+			}
+			// 代理函数
+			var proxyFunc = function(fn) {
+				var cache = {}; // 缓存对象
+				return function() {
+					var args = Array.prototype.join.call(arguments, ',');
+					console.log(cache);
+					if (args in cache) {
+						return cache[args]; // 使用缓存代理
+					}
+					return cache[args] = fn.apply(this, arguments);
+				}
+			};
+			
+			// 调用
+			var proxyMult = proxyFunc(mult);
+			console.log(proxyMult(1, 2, 3, 4)); // 24
+			console.log(proxyMult(1, 2, 3, 4)); // 缓存取 24
+			
+			var proxyPlus = proxyFunc(plus);
+			console.log(proxyPlus(1, 2, 3, 4)); // 10
+			console.log(proxyPlus(1, 2, 3, 4)); // 缓存取 10
+		</script>
+	</body>
+
+</html>

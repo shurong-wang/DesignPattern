@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title>模板方法模式</title>
+	</head>
+
+	<body>
+		<dl style="font-family: '微软雅黑';">
+			<dt>模板方法模式</dt>
+			<dd> 命令模式中的命令指的是一个执行某些特定事情的指令。</dd>
+			<dd>使用场景：
+				<ol>
+					<li>请求发送者和请求接受者消除彼此代码中的耦合关系。</li>
+				</ol>
+			</dd>
+		</dl>
+
+		<script type="text/javascript">
+			// 案例1 应聘
+			
+			// 创建父类
+			var Interview = function() {};
+			Interview.prototype.writtenTest = function() {
+				console.log("发笔试题了");
+			};
+			Interview.prototype.technicalTest = function() {
+				console.log("我是技术负责人，负责技术面试");
+			};
+			Interview.prototype.leaderTest = function() {
+				console.log("我是leader，前来面试");
+			};
+			Interview.prototype.waitNotice = function() {
+				console.log("等通知吧");
+			};
+			Interview.prototype.init = function() {
+				this.writtenTest();
+				this.technicalTest();
+				this.leaderTest();
+				this.waitNotice();
+			};
+			
+			// 创建子类
+			var BaiDuInterview = function() {};
+			BaiDuInterview.prototype = new Interview();
+			// 子类重写方法，实现自己的业务逻辑
+			BaiDuInterview.prototype.writtenTest = function() {
+				console.log("发笔百度试题了");
+			}
+			BaiDuInterview.prototype.technicalTest = function() {
+				console.log("我是百度的技术负责人， 想面试找你");
+			}
+			BaiDuInterview.prototype.leaderTest = function() {
+				console.log("我是百度的leader， 不想加班的或者业绩提不上去的给我滚蛋");
+			}
+			BaiDuInterview.prototype.waitNotice = function() {
+				console.log("五到十个工作日通知你");
+			}
+			var baiDuInterview = new BaiDuInterview();
+			baiDuInterview.init();
+		</script>
+
+	</body>
+
+</html>
