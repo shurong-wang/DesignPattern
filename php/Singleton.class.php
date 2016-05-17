@@ -1,7 +1,7 @@
 <?php
 header("Content-Type:text/html; charset=utf-8");
 
-// 单例模式（实现一）
+// 单例模式（三私一公）
 class Singleton{
 	//私有化构造方法，禁止外部实例化对象
 	private function __construct(){}
@@ -9,7 +9,7 @@ class Singleton{
 	private function __clone(){}
 	//私有化内部实例化的对象
 	private static $instance = null;
-
+	// 公有静态实例方法
 	public static function getInstance(){
 		if(self::$instance == null){
 			//内部实例化对象
@@ -23,7 +23,7 @@ $a = Singleton::getInstance();
 $b = Singleton::getInstance();
 var_dump($a === $b);
 
-// 单例模式（实现二）
+// 单例模式（中介）
 class Common {
     private $_objects;  //保存所有实例化好的对象
     public function getObject($c_name) {

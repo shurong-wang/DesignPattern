@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8"/>
+    <title>迭代器模式</title>
+</head>
+
+<body>
+<dl style="font-family: '微软雅黑';">
+    <dt>迭代器模式</dt>
+    <dd>提供一种方法顺序一个聚合对象中各个元素，而又不暴露该对象内部表示。</dd>
+	<dd>特点：
+		<ol>
+			<li>访问一个聚合对象的内容而无需暴露它的内部表示。</li>
+			<li>为遍历不同的集合结构提供一个统一的接口，从而支持同样的算法在不同的集合结构上进行操作。</li>
+			<li>遍历的同时更改迭代器所在的集合结构可能会导致问题（比如C#的foreach里不允许修改item）。</li>
+		</ol>
+	</dd>
+</dl>
+<script type="text/javascript">
+	var arr = ["PHP", ["HTML5", "CSS3"], {"client":"JavaScript", "server":"Node.js"}];
+	var aggregate = (function() {
+		var length = arr.length,
+			index = 0;
+		return {
+			hasNext: function() {
+				return index < length;
+			},
+			next: function() {
+				var data = arr[index];
+				index = index + 1;
+				return data;
+			},
+			reset:function(){
+				index = 0;
+			}
+		};
+	})();
+	while(aggregate.hasNext()){
+		console.log(aggregate.next());
+	}
+</script>
+
+</body>
+
+</html>

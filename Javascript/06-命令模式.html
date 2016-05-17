@@ -28,12 +28,6 @@
 			    btn2 = document.getElementById("button2"),
 			    btn3 = document.getElementById("button3");
 			    
-			// bindEnv 负责往按钮上面安装点击命令。点击按钮后，会调用函数
-			var bindEnv = function(button, func) {
-			    button.onclick = function(){
-			        func();
-			    }
-			};
 			// 实现业务中的增删改操作
 			var Menu = {
 			    add: function(){
@@ -46,6 +40,12 @@
 			        alert("我是来处理一些更新操作的");
 			    }
 			};
+
+			// bindEnv 负责往按钮上面安装点击命令。点击按钮后，会调用函数
+			var bindEnv = function(btn, handler) {
+				btn.addEventListener('click', handler);
+			};
+
 			// 调用函数
 			bindEnv(btn1, Menu.add); // 增加按钮
 			bindEnv(btn2, Menu.del); // 删除按钮
@@ -93,11 +93,11 @@
 			};
 			
 			// 初始化宏命令
-			var cmd = command();
-			cmd.add(command1);
-			cmd.add(command2);
-			cmd.add(command3);
-			cmd.execute();
+			var handler = command();
+			handler.add(cmd1);
+			handler.add(cmd2);
+			handler.add(cmd3);
+			handler.execute();
 		</script>
 
 	</body>
