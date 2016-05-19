@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8"/>
+    <title>面向切面编程（AOP）</title>
+</head>
+
+<body>
+<dl style="font-family: '微软雅黑';">
+    <dt>面向切面编程（AOP）</dt>
+    <dd>面向切面的编程（AOP）简单理解：可以在不修改原有代码的情况下，动态添加新功能。</dd>
+</dl>
+<script type="text/javascript">
+    Function.prototype.before = function (fn) {
+        var __self = this;  // 主体函数 this
+        return function () {
+            // 1. 执行前置函数
+            if (false === fn.apply(this, arguments)) {
+                return false;
+            }
+            // 2. 执行主体函数（如果前置函数执行结果不为 false）
+            return __self.apply(__self, arguments);
+        }
+    };
+
+    Function.prototype.after = function (fn) {
+        var __self = this;  // 主体函数 this
+        return function () {
+            // 1. 执行主体函数（保存主体函数执行结果）
+            var result = __self.apply(__self, arguments);
+            if (false === result) {
+                return false;
+            }
+            // 2. 执行后置函数
+            fn.apply(this, arguments);
+            // 3. 返回主体函数执行结果
+            return result;
+        }
+    };
+
+    function foo(arg) {
+        console.log('Function is running ...');
+        return arg;
+    }
+
+    function check() {
+        console.log('Checking ...');
+        return (1 == new Date().getTime() % 2);
+    }
+
+    function log() {
+        console.log('Logging ...');
+    }
+
+    var res = foo.before(check).after(log)('Hello AOP!');
+    console.log(res);
+
+    console.log("-------------------------");
+
+    var res = foo.after(log).before(check)('Hello AOP!');
+    console.log(res);
+
+</script>
+
+</body>
+
+</html>
