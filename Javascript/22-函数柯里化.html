@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8"/>
+    <title>柯里化（Currying）</title>
+</head>
+
+<body>
+<dl style="font-family: '微软雅黑';">
+    <dt>柯里化（Currying）</dt>
+    <dd>
+        柯里化通常也称部分求值，其含义是给函数分步传递参数。每次传递参数后，部分应用参数，并返回一个更具体的函数接受剩下的参数。
+        这中间可嵌套多层这样的接受部分参数函数，直至返回最后结果。因此柯里化的过程是逐步传参，逐步缩小函数的适用范围，逐步求解的过程。
+    </dd>
+    <dd>柯里化的作用：
+        <ol>
+            <li>延迟计算。</li>
+            <li>参数复用。</li>
+            <li>动态创建函数。</li>
+        </ol>
+    </dd>
+    <dd>柯里化肯定会有一些开销（函数嵌套，比普通函数占更多内存），但性能瓶颈首先来自其它原因（DOM 操作等）：
+        <ol>
+            <li>存取arguments对象通常要比存取命名参数要慢一点。</li>
+            <li>老版本的浏览器在arguments.length的实现上是相当慢。</li>
+            <li>使用fn.apply() 和 fn.call()通常比直接调用fn() 稍微慢点。</li>
+            <li>创建大量嵌套作用域和闭包函数会带来花销，无论是在内存还是速度上。</li>
+        </ol>
+    </dd>
+</dl>
+<script type="text/javascript">
+    /**
+     * 一个接收三个地名字符串的函数，功能是将三个地名字符串拼接到一起成为一个详细的地址
+     * */
+    function loc(a, b, c) {
+        console.log(a + '-' + b + '-' + c);
+    }
+
+    loc('浙江', '杭州', '西湖区'); // 浙江-杭州-西湖区
+    loc('浙江', '杭州', '拱墅区'); // 浙江-杭州-拱墅区
+
+    /**
+     * 缺陷：如果我们还要生成“浙江-杭州-余杭区”、“浙江-杭州-拱墅区”等同一省市的地名时，每次都要重新把“浙江-杭州”重新拼接一遍。
+     * 思路：尝试只通过一个函数，把已经拼接过的字符串（如“浙江-杭州”）缓存起来，只去拼接新的字符串（如“余杭区”）。
+     * */
+</script>
+
+<script type="text/javascript">
+    /**
+     * 柯里化辅助函数
+     * */
+    function curry(fn) {
+        var outerArgs = Array.prototype.slice.call(arguments, 1);
+        return function () {
+            var innerArgs = Array.prototype.slice.call(arguments);
+            var finalArgs = outerArgs.concat(innerArgs);
+            return fn.apply(null, finalArgs);
+        };
+    }
+
+    var zhejiang = curry(loc, '浙江');
+    var hangzhou = curry(zhejiang, '杭州');
+    hangzhou('余杭区');    	  // 浙江-杭州-余杭区
+    hangzhou('上城区');        // 浙江-杭州-上城区
+    zhejiang('宁波', '海曙区');// 浙江-宁波-海曙区
+</script>
+</body>
+
+</html>
